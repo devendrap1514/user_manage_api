@@ -8,4 +8,6 @@ Rails.application.routes.draw do
   post "/signup", to: "users#signup"
   get "/users/profile", to: "users#profile"
   get "/logout", to: "users#logout"
+  patch "/users/update", to: "users#update"
+  get "/users", to: "users#index"
 end
