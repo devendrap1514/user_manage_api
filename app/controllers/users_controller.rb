@@ -1,6 +1,15 @@
 class UsersController < ApplicationController
-  # protect_from_forgery with: :null_session
   skip_before_action :verify_authenticity_token
+
+  before_action :suggest_login, unless: :is_login?
+
+  def is_login?
+    session[:current_user_id] != nil
+  end
+
+  def suggest_login
+    render json: { message: "Required Login" }
+  end
 
   def index
     render json: User.all
@@ -8,7 +17,7 @@ class UsersController < ApplicationController
 
   def login
     @user = User.find_by(email: params[:email], password: params[:password])
-    if session[:current_user_id] != nil
+    if is_login?
       render json: { message: "Already login" }
     elsif @user
       session[:current_user_id] = @user.id
@@ -33,33 +42,21 @@ class UsersController < ApplicationController
   end
 
   def logout
-    if session[:current_user_id] != nil
-      session.delete(:current_user_id)
-      render json: { message: "Logout"}
-    else
-      render json: { message: "Login required" }
-    end
+    session.delete(:current_user_id)
+    render json: { message: "Logout" }
   end
 
   def profile
-    if session[:current_user_id] == nil
-      render json: { message: "Login required" }
-    else
-      render json: User.find_by_id(session[:current_user_id])
-    end
+    render json: User.find_by_id(session[:current_user_id])
   end
 
   def update
-    if session[:current_user_id] != nil
-      @user = User.find_by_id(session[:current_user_id])
+    @user = User.find_by_id(session[:current_user_id])
 
-      if @user.update_attribute(:password, params[:password]) && params[:password].present?
-        render json: User.find_by_id(session[:current_user_id])
-      else
-        render json: { message: "Something went wrong" }
-      end
+    if @user.update_attribute(:password, params[:password]) && params[:password].present?
+      render json: User.find_by_id(session[:current_user_id])
     else
-      render json: { message: "Login required" }
+      render json: { message: "Something went wrong" }
     end
   end
 
