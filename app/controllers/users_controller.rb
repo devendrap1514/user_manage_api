@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
 
-  before_action :suggest_login, unless: :is_login?
+  before_action :suggest_login, unless: :is_login?, except: :login
 
   def is_login?
     session[:current_user_id] != nil
